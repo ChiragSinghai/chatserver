@@ -1,0 +1,801 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style type="text/css" xmlns="http://www.w3.org/1999/html">
+	.chat-log {
+		display:flex;
+		height: 300px;
+		overflow-x: hidden;
+		overflow-y: auto;
+		padding: 10px;
+		background-color: #fff;
+		font-size: 0.9em;
+		flex-direction: column-reverse;
+	}
+
+	#id_connected_users_container{
+	    display:flex;
+		height: 300px;
+		border: 2px solid #000;
+		overflow-x: auto;
+		overflow-y: auto;
+		padding: 10px;
+		background-color: #fff;
+		font-size: 0.9em;
+		margin-left:7px;
+		//flex-wrap: nowrap;
+		min-width:150px;
+	}
+
+    .items {
+        flex: 0 0 auto;
+    }
+
+
+    .singleLine{white-space:nowrap;}
+
+    .other-user{
+		padding-right:10px;
+		//border: 1px solid var(--light-primary-text-color);
+		border-left:3px solid var(--light-primary-text-color);
+	}
+
+	.user{
+        padding-left:10px;
+        //border: 1px solid gray;
+        border-right: 3px solid gray;
+	}
+
+
+	#id_chatroom_loading_spinner{
+		position: absolute;
+		margin-top: 40px;
+	}
+
+	#id_online_users_title{
+		font-weight: 550;
+		color: green;
+	}
+	#chat-log-container {
+		height: 300px;
+	}
+
+	#input{
+	margin-top: 5px;
+	border: 2px solid #000;
+
+	}
+
+	#submit{
+		margin-top:5px;
+		width:150px;
+		margin-left:10px;
+	}
+
+	.wrapUp{white-space: pre-line;
+		overflow-wrap: break-word;
+	}
+
+
+
+	.username-span{
+		font-weight: 600;
+		margin-top: 0px;
+		margin-bottom: auto;
+		margin-left: 0px;
+		margin-right: 0px;
+	}
+	.msg-span{
+		font-weight: 450;
+		margin-top: 0px;
+		margin-bottom: auto;
+		white-space: normal;
+	}
+	.message-container{
+		margin-top: 10px;
+		padding:5px;
+		border-radius:5px;
+	}
+	.profile-image{
+		width: 40px;
+		height: 40px;
+		margin-top: 0px;
+		margin-bottom: auto;
+	}
+	.chat-message-submit-button{
+	    margin-top:5px;
+	    text-align:center;
+	}
+
+    #leave{
+        width:150px;
+        margin-bottom:5px;
+    }
+
+
+    .connected_user_container{
+        margin-top: 2px;
+		padding:5px;
+		padding-left:1px
+		border-radius:5px;
+    }
+
+    .active{
+    	color: green;
+    	position: relative;
+        top :-8px;
+        left:-10px;
+    }
+
+    .inactive{
+    	color: red;
+    	position: relative;
+    	top :-8px;
+        left:-10px;
+
+    }
+
+	.profile-image-small{
+		width: 25px;
+		height: 25px;
+		margin-top: 0px;
+		margin-bottom: auto;
+		margin-right: 5px;
+	}
+	.profile-image:hover{
+		cursor: pointer;
+	}
+	.profile-image-small:hover{
+		cursor: pointer;
+	}
+	.username-span:hover{
+		cursor: pointer;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+
+	#id_chat_log{
+	}
+
+	.bor{
+	border:1px solid gray;
+	}
+
+
+
+
+
+</style>
+
+<div class="container">
+        <div class="d-flex flex-row justify-content-between">
+            <h3 id="id_room_title">{{room_name}}</h3>
+            <input class="btn btn-secondary btn-lg btn-block " id="leave" type="button" value="Leave">
+
+
+        </div>
+        <div class="d-flex flex-row justify-content-around">
+		    <div class="d-flex flex-column flex-grow-1" id="id_chat_log_container bor">
+
+			<div class="d-flex flex-row justify-content-center" id="id_chatroom_loading_spinner_container">
+				<div class="spinner-border text-primary"  id="id_chatroom_loading_spinner" role="status"  style="display: none; ">
+					<span class="sr-only"></span>
+				</div>
+			</div>
+			<div class="d-flex chat-log" id="id_chat_log">
+
+			</div>
+			<span class="d-none page-number" id="id_page_number">1</span>
+			<span class="d-none has-joined-room" id="id_has_joined_room">False</span>
+
+
+		</div>
+            <div class="d-flex flex-column" id="id_connected_users_container" >
+			    <p id="id_online_users_title">Connected users</p>
+			    <div class="d-flex flex-column connected-users" id="id_connected_users">
+
+			    </div>
+		    </div>
+
+	    </div>
+
+
+                    <div class="d-flex flex-row flex-grow-1">
+                        <div class="form-group d-flex flex-column flex-grow-1 mr-5">
+                                <input class="form-control" id="input" type="text" onkeypress="handleEnterKey(event)"></br>
+                        </div>
+                        <div class="d-flex flex-column" style="text-align:center;">
+                            <input class="btn btn-secondary btn-lg btn-block " id="submit" type="button" value="Send" align="center">
+                        </div>
+                    </div>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+document.getElementById("input").style.display="block";
+{% if not has_joined %}
+document.getElementById("input").style.display = "none";
+document.getElementById("submit").value = "Join";
+document.getElementById("leave").style.display = "none"
+
+
+{% endif %}
+</script>
+{{ room_id|json_script:"room-id" }}
+{{ has_joined|json_script:"has-joined" }}
+<script>
+    function handleEnterKey(e){
+    if(e.keyCode == 13){ // enter pressed
+        try{
+            e.preventDefault()
+
+            sendMessage()
+
+        }catch(err){
+            console.log(err.message);
+        }
+    }
+}
+</script>
+
+ <script type="text/javascript">
+        function displayChatroomLoadingSpinner(isDisplayed){
+            console.log("display spinner " + isDisplayed)
+            var spinner = document.getElementById("id_chatroom_loading_spinner")
+            if(isDisplayed){
+                spinner.style.display = "block"
+            }
+            else{
+                spinner.style.display = "none"
+            }
+        }
+    </script>
+
+<script type="text/javascript">
+
+        document.querySelector('#submit').onclick = function (e) {
+            sendMessage()
+        };
+
+        document.querySelector('#leave').onclick = function (e) {
+            chatSocket.send(JSON.stringify({
+            'message':'',
+            'command' : 'left'}));
+            document.location.href = window.location.origin
+            disableChatLogScrollListener()
+
+        };
+
+        var has_joined = JSON.parse(document.getElementById('has-joined').textContent);
+        console.log(has_joined)
+
+
+        function sendMessage(){
+            const messageInputDom = document.querySelector('#input');
+            if (has_joined){
+                message = messageInputDom.value;
+                command = 'new_message';}
+            else{
+                has_joined=true;
+                message = 'has joined the chat';
+                command = 'join';}
+
+            chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'command': command,
+                }));
+            messageInputDom.value = '';
+
+            if (has_joined){
+            document.getElementById("input").style.display = "block";
+            document.getElementById("submit").value = "Send";
+            document.getElementById("leave").style.display = "block"}
+        };
+
+
+        function setPageNumber(pageNumber){
+            document.getElementById("id_page_number").innerHTML = pageNumber
+        }
+
+
+        function setPaginationExhausted(){
+		    setPageNumber("-1")
+	    }
+
+
+
+
+
+
+
+        function isUserActive(x,y){
+        return x.some(function(z){return z.id === y})
+
+        }
+
+        function setUsers(allUser,activeUser){
+            var parent = document.getElementById("id_connected_users")
+            while (parent.firstChild) {
+                parent.removeChild(parent.lastChild)};
+            allUser.forEach(user => console.log(user.id));
+            allUser.forEach(user => console.log(isUserActive(activeUser,user.id)))
+            allUser.forEach(user => appendUsers(user.id,user.username,user.profile_image,isUserActive(activeUser,user.id)))
+        }
+
+
+        function appendUsers(user_id, uName, profile_image,active){
+            parent = document.getElementById("id_connected_users")
+
+            newDiv = document.createElement("div")
+            newDiv.classList.add("d-flex")
+            newDiv.classList.add("flex-row")
+            newDiv.classList.add("connected_user_container")
+            //newDiv.classList.add("bor")
+            //newDiv.classList.add("horizontally-scrolled-items")
+            newDiv.classList.add("singleLine")
+
+
+            var img = document.createElement("img")
+            img.classList.add("profile-image-small")
+            img.classList.add("rounded-circle")
+            img.classList.add("img-fluid")
+            img.src = profile_image
+
+
+            var circleSpan = document.createElement("span")
+            if (active){
+                circleSpan.classList.add("active")
+            }
+            else{
+                circleSpan.classList.add("inactive")
+            }
+            circleSpan.innerHTML = "●";
+
+            uDiv = document.createElement("div")
+            uDiv.classList.add("username-span")
+            uDiv.innerHTML =uName
+
+
+
+
+            newDiv.appendChild(img)
+            newDiv.appendChild(circleSpan)
+            newDiv.appendChild(uDiv)
+            parent.appendChild(newDiv)
+
+
+
+
+
+            /*
+            var p = document.createElement("p")
+            p.id = "id_connected_user_" + user_id
+            var usernameSpan = document.createElement("span")
+            usernameSpan.classList.add("username-span")
+
+
+            usernameSpan.innerHTML = uName
+            var img = document.createElement("img")
+            img.classList.add("profile-image-small")
+            img.classList.add("rounded-circle")
+            img.classList.add("img-fluid")
+            img.src = profile_image
+
+            var circleSpan = document.createElement("span")
+            if (active){
+                circleSpan.classList.add("active")
+            }
+            else{
+                circleSpan.classList.add("inactive")
+            }
+            circleSpan.innerHTML = "●";
+
+
+            usernameSpan.addEventListener("click", function(){
+                selectUser(user_id);
+            })
+
+
+
+
+            img.addEventListener("click", function(){
+                selectUser(user_id)
+            })
+
+
+            p.appendChild(img)
+            p.appendChild(circleSpan)
+            p.appendChild(usernameSpan)
+            parent.appendChild(p)
+            */
+        }
+
+
+        function selectUser(user_id){
+
+            var url = "{% url 'account:view' user_id=53252623623632623 %}".replace("53252623623632623", user_id)
+            var win = window.open(url, "_blank")
+            win.focus()
+	    }
+
+        const roomID = JSON.parse(document.getElementById('room-id').textContent);
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+	    {% if debug_mode %}
+		var ws_path = ws_scheme + '://' + window.location.host + "/public_chat/{{room_id}}/"; // development
+	    {% else %}
+		var ws_path = ws_scheme + '://' + window.location.host + ":8001/public_chat/{{room_id}}/"; // production
+	    {% endif %}
+        const chatSocket = new WebSocket(ws_path);
+
+        chatSocket.onmessage = function(e) {
+            console.log(e.data);
+            const data = JSON.parse(e.data);
+
+            if (data.messageType=="new" && data.message){
+                console.log('new message')
+                appendChatMessage(data, false, true)
+            }
+
+            if(data.messageType=="connect" && has_joined){
+                chatSocket.send(JSON.stringify({
+                'message':{{ room_id }},
+                'command' : 'getUsers'}));
+            }
+
+            if (data.messageType=='connectedUser'){
+                setUsers(data.connected_users,data.active_user)
+            }
+            if (data.messageType=='displaySpinner'){
+                displayChatroomLoadingSpinner(data.display);
+            }
+
+            if (data.messageType=='messages_payload'){
+                handleMessagesPayload(data.messages,data.new_page_number)
+
+
+            }
+            if (data.messageType=="left"){
+                user_id = data['user_id']
+                message = data['message']
+                profile_image = data['profile_image']
+                username = data['username']
+                msg_id = data['msg_id']
+
+            createConnectedDisconnectedElement(message,profile_image, user_id,msg_id,username)}
+
+
+            if (data.messageType=="joined"){
+                user_id = data['user_id']
+                message = data['message']
+                profile_image = data['profile_image']
+                username = data['username']
+                msg_id = data['msg_id']
+                if({{request.user.id}} == data.user_id){
+                    //document.querySelector('#chat-text').value += ( 'you joined the chat' + '\n');
+                    has_joined = true;
+                    clearChatLog()
+                    getOldMessages()
+
+                    }
+                else{
+                    //document.querySelector('#chat-text').value += ( data.username + ' ' + data.message + '\n');
+
+                }
+            createConnectedDisconnectedElement(message,profile_image, user_id,msg_id,username)
+            }
+        };
+
+        function clearChatLog(){
+		    document.getElementById("id_chat_log").innerHTML = ""
+	    }
+
+        function enableChatLogScrollListener(){
+            document.getElementById("id_chat_log").addEventListener("scroll", chatLogScrollListener);
+        }
+
+
+        function disableChatLogScrollListener(){
+            document.getElementById("id_chat_log").removeEventListener("scroll", chatLogScrollListener)
+        }
+
+        function chatLogScrollListener(e) {
+            var chatLog = document.getElementById("id_chat_log")
+            if ((Math.abs(chatLog.scrollTop) + 2) >= (chatLog.scrollHeight - chatLog.offsetHeight)) {
+                getOldMessages()
+            }
+        }
+
+
+
+        function handleMessagesPayload(messages, new_page_number){
+            if(messages != null && messages != "undefined" && messages != "None"){
+                setPageNumber(new_page_number)
+                messages.forEach(function(message){
+                    appendChatMessage(message, true, false)
+                })
+            }
+            else{
+                setPaginationExhausted() // no more messages
+            }
+        }
+
+
+        function appendChatMessage(data, maintainPosition, isNewMessage){
+		    msg_id = data['msg_id']
+		    message = data['message']
+		    uName = data['username']
+		    user_id = data['user_id']
+		    profile_image = data['profile_image']
+            username = uName + ": "
+			msg = message + '\n'
+			createChatMessageElement(msg, msg_id, username, profile_image, user_id, maintainPosition, isNewMessage)
+        }
+
+        function createChatMessageElement(msg, msg_id, username, profile_image, user_id, maintainPosition, isNewMessage){
+            var chatLog = document.getElementById("id_chat_log")
+            if ({{request.user.id}} != user_id){console.log('hey there')}
+            outerDiv = document.createElement("div")
+			outerDiv.classList.add("d-flex")
+			outerDiv.classList.add("flex-column")
+			outerDiv.classList.add("chat-message-container")
+			if ({{request.user.id}} != user_id){
+				outerDiv.classList.add("align-items-start")
+			}
+			else{
+				outerDiv.classList.add("align-items-end")
+			}
+
+
+            newDiv = document.createElement("div")
+            newDiv.classList.add("d-flex")
+            //newDiv.classList.add("bor")
+            if ({{request.user.id}} != user_id){
+            	newDiv.classList.add("flex-row")
+            	newDiv.classList.add("other-user")
+            }
+            else{
+            	newDiv.classList.add("flex-row-reverse")
+            	newDiv.classList.add("user")
+            }
+            newDiv.classList.add("message-container")
+            newDiv.classList.add("align-items-center")
+
+			var profileImage = document.createElement("img")
+            profileImage.addEventListener("click", function(e){
+                selectUser(user_id)
+            })
+
+            profileDiv = document.createElement("div")
+            profileImage.classList.add("profile-image")
+            profileImage.classList.add("rounded-circle")
+            //profileImage.classList.add("align-item-center")
+            //profileImage.classList.add("img-fluid")
+            profileImage.src = "{% static 'dummy_image.png' %}".replace(/&amp;/g, "&")
+            var profile_image_id = "id_profile_image_" + msg_id
+            profileImage.id = profile_image_id
+            profileDiv.appendChild(profileImage)
+
+			newDiv.appendChild(profileDiv)
+			//for message and username as column
+			if ({{request.user.id}} != user_id){
+				innerDiv = document.createElement("div")
+				innerDiv.classList.add("d-flex")
+				innerDiv.classList.add("flex-column")
+				innerDiv.classList.add("align-self-start")
+				innerDiv.classList.add("username-span")
+				//innerDiv.classList.add("align-items-center")
+				usernameDiv = document.createElement("div")
+				usernameDiv.innerHTML = username
+				innerDiv.appendChild(usernameDiv)
+				newDiv.appendChild(innerDiv)
+			}
+
+			messageDiv = document.createElement("div")
+			messageDiv.classList.add("wrapUp")
+			messageDiv.innerHTML = msg
+
+			if ({{request.user.id}} != user_id){
+				innerDiv.appendChild(messageDiv)
+			}
+			else{
+			messageDiv.classList.add("align-self-center")
+			newDiv.appendChild(messageDiv)
+			}
+
+
+			outerDiv.appendChild(newDiv)
+
+			if(isNewMessage){
+                chatLog.insertBefore(outerDiv, chatLog.firstChild)
+            }
+            else{
+                chatLog.appendChild(outerDiv)
+            }
+
+
+
+            if(!maintainPosition){
+                chatLog.scrollTop = chatLog.scrollHeight
+            }
+
+            //preloadImage(profile_image, profile_image_id)
+
+
+
+			/*
+            var newMessageDiv = document.createElement("div")
+            newMessageDiv.classList.add("d-flex")
+            //newMessageDiv.classList.add("justify-content-end")
+
+            if ({{request.user.id}} != user_id){
+            newMessageDiv.classList.add("flex-row")
+            }
+            else{
+            newMessageDiv.classList.add("flex-row-reverse")
+            newMessageDiv.classList.add("justify-content-start")
+            //newMessageDiv.classList.add("flex-grow-1")
+            }
+            newMessageDiv.classList.add("message-container")
+
+            var profileImage = document.createElement("img")
+            profileImage.addEventListener("click", function(e){
+                selectUser(user_id)
+            })
+            profileImage.classList.add("profile-image")
+            profileImage.classList.add("rounded-circle")
+            profileImage.classList.add("img-fluid")
+            profileImage.src = "{% static 'dummy_image.png' %}"
+            var profile_image_id = "id_profile_image_" + msg_id
+            profileImage.id = profile_image_id
+            newMessageDiv.appendChild(profileImage)
+
+            var div1 = document.createElement("div")
+            div1.classList.add("d-flex")
+            div1.classList.add("flex-column")
+
+
+            var div2 = document.createElement("div")
+            div2.classList.add("d-flex")
+            div2.classList.add("flex-row")
+
+            var usernameSpan = document.createElement("span")
+            if ({{request.user.id}} != user_id){usernameSpan.innerHTML = username}
+            else {usernameSpan.innerHTML = 'you'}
+            usernameSpan.classList.add("username-span")
+
+            usernameSpan.addEventListener("click", function(e){
+                selectUser(user_id)
+            })
+            if ({{request.user.id}} == user_id){div2.classList.add("justify-content-end")}
+            div2.appendChild(usernameSpan)
+
+            div1.appendChild(div2)
+
+            var msgP = document.createElement("p")
+            msgP.innerHTML = msg
+            msgP.classList.add("msg-p")
+            msgP.classList.add("wrapUp")
+            div1.appendChild(msgP)
+
+            newMessageDiv.appendChild(div1)
+
+            if(isNewMessage){
+                chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+            }
+            else{
+                chatLog.appendChild(newMessageDiv)
+            }
+
+            if(!maintainPosition){
+                chatLog.scrollTop = chatLog.scrollHeight
+            }
+
+            preloadImage(profile_image, profile_image_id)
+            */
+        }
+
+
+        function createConnectedDisconnectedElement(msg, profile_image, user_id,msg_id,username){
+            var chatLog = document.getElementById("id_chat_log")
+
+            var newMessageDiv = document.createElement("div")
+            newMessageDiv.classList.add("d-flex")
+            newMessageDiv.classList.add("flex-row")
+
+            newMessageDiv.classList.add("justify-content-center")
+            //newMessageDiv.classList.add("align-items-center")
+            newMessageDiv.classList.add("message-container")
+
+            var profileImage = document.createElement("img")
+            profileImage.addEventListener("click", function(e){
+                selectUser(user_id)
+            })
+            profileImage.classList.add("profile-image")
+            profileImage.classList.add("rounded-circle")
+            profileImage.classList.add("img-fluid")
+            profileImage.src = "{% static 'dummy_image.png' %}"
+            var profile_image_id = "id_profile_image_" + msg_id
+            profileImage.id = profile_image_id
+            newMessageDiv.appendChild(profileImage)
+
+            var usernameSpan = document.createElement("div")
+
+            usernameSpan.innerHTML = username + ' ' + msg
+            usernameSpan.classList.add("username-span")
+            usernameSpan.classList.add("d-flex")
+            usernameSpan.classList.add("align-self-center")
+            usernameSpan.classList.add("m-1")
+            usernameSpan.addEventListener("click", function(e){
+                selectUser(user_id)
+            })
+            newMessageDiv.appendChild(usernameSpan)
+
+            chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+            chatLog.scrollTop = chatLog.scrollHeight
+
+            preloadImage(profile_image, profile_image_id)
+        }
+
+
+
+
+        chatSocket.addEventListener('open', (event) => {
+            chatSocket.send(JSON.stringify({
+            'message':'',
+            'command' : 'connect'}));
+
+            if (has_joined) {
+                getOldMessages()
+            }
+            });
+
+
+        chatSocket.onclose = function(e) {
+		    console.error('Chat socket closed unexpectedly');
+
+	    };
+
+        function getOldMessages(){
+            enableChatLogScrollListener()
+		    var pageNumber = document.getElementById("id_page_number").innerHTML
+		    if(pageNumber != "-1"){
+			    setPageNumber("-1") // loading in progress
+			    chatSocket.send(JSON.stringify({
+				    "command": "fetch_messages",
+				    "message": pageNumber,
+			    }));
+		    }
+	    }
+
+
+	    chatSocket.onOpen = function(e){
+		    console.log('socket opened')
+	    }
+
+    </script>
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous">
+    </script>
+{% endblock content %}

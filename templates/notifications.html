@@ -1,0 +1,636 @@
+{% load static %}
+<p class="d-none" id="id_general_page_number">1</p>
+<p class="d-none" id="id_general_oldest_timestamp"></p>
+<p class="d-none" id="id_general_newest_timestamp"></p>
+<style type="text/css">
+	.notification-thumbnail-image{
+		height: 50px;
+		width: 50px;
+	}
+	.general-card:hover{
+		cursor: pointer;
+		background: #f2f2f2;
+	}
+	.general-card{
+		border-bottom: 1px solid var(--main-background-color);
+	}
+</style>
+
+<script src="{% static 'collections/collections.min.js' %}"></script>
+
+
+<script type="text/javascript">
+    var id1 = null;
+    var id2 = null;
+    var id3 = null;
+    var id4 = null;
+
+    var cachedNotificationList = new List([])
+
+    function setUpNotification(){
+		var notificationContainer = document.getElementById("id_general_notifications_container")
+
+		if(notificationContainer != null){
+			card = createCard("id_no_general_notifications")
+
+			var div = document.createElement("div")
+			div.classList.add("d-flex", "flex-row", "align-items-start")
+
+			span = document.createElement("span")
+			span.classList.add("align-items-start", "pt-1", "m-auto")
+			span.innerHTML = "You have no notifications."
+			div.appendChild(span)
+			card.appendChild(div)
+			notificationContainer.appendChild(card)
+		}
+	}
+
+	// it will clear all notification card if there is any notification
+
+	function clearNoNotificationCard(){
+		var element = document.getElementById("id_no_general_notifications")
+		if(element != null && element != "undefined"){
+			document.getElementById("id_general_notifications_container").removeChild(element)
+		}
+	}
+
+
+    // simple card for any notification creation or even for no notification
+    function createCard(cardId){
+		var card = document.createElement("div")
+		if(cardId != "undefined"){
+			card.id = cardId
+		}
+		card.classList.add("d-flex", "flex-column", "align-items-start", "general-card", "p-4")
+		return card
+	}
+
+
+
+
+	function setUnreadNotificationCount(count){
+	    var countElement = document.getElementById("id_general_notifications_count")
+		if(count > 0){
+			countElement.style.background = "red"
+			countElement.style.display = "block"
+			countElement.innerHTML = count
+		}
+		else{
+			countElement.style.background = "transparent"
+			countElement.style.display = "none"
+		}
+	}
+
+
+    function handleAllMessagePayload(notifications,new_page_number){
+        if(notifications.length > 0){
+            clearNoNotificationCard()
+            notifications.forEach(notification => {
+                notificationToCache(notification)
+                setOldestTimestamp(notification['timestamp'])
+				setNewestTimestamp(notification['timestamp'])
+            })
+        setNotificationPageNumber(new_page_number)
+        }
+    }
+
+
+    function handleNewMessagePayload(notifications){
+        if(notifications.length > 0){
+            clearNoNotificationCard()
+            notifications.forEach(notification =>{
+                newNotificationToCache(notification)
+                setNewestTimestamp(notification['timestamp'])
+                setOldestTimestamp(notification['timestamp'])
+            })
+        }
+    }
+
+    function handleRefreshPayload(notifications){
+        if(notifications.length > 0){
+            clearNoNotificationCard()
+            notifications.forEach(notification => {
+                notificationToCache(notification)
+                setOldestTimestamp(notification['timestamp'])
+				setNewestTimestamp(notification['timestamp'])
+            })
+        }
+    }
+
+    function newNotificationToCache(notification){
+        var result = cachedNotificationList.filter(function(n){
+            return n['notification_id'] === notification['notification_id']
+        })
+        if(result.length ==0){
+            cachedNotificationList.push(notification)
+			appendTopNotification(notification)
+        }
+        else{
+			refreshNotificationsList(notification)
+		}
+    }
+
+    function notificationToCache(notification){
+        var result = cachedNotificationList.filter(function(n){
+			return n['notification_id'] === notification['notification_id']
+		})
+		if(result.length == 0){
+			cachedNotificationList.push(notification)
+
+			// append to bottom of list
+			appendBottomNotification(notification)
+		}
+		else{
+			refreshNotificationsList(notification)
+		}
+
+    }
+
+
+
+    function refreshNotificationsList(notification){
+		notificationContainer = document.getElementById("id_general_notifications_container")
+		if(notificationContainer != null){
+			divs = notificationContainer.childNodes
+			divs.forEach(function(card){
+				if(card.id == ("id_notification_" + notification['notification_id'])){
+
+					switch(notification['notification_type']) {
+
+						case "FriendRequest":
+							refreshFriendRequestCard(card, notification)
+							break;
+
+						case "FriendList":
+							refreshFriendListCard(card, notification)
+							break;
+
+						default:
+							// code block
+					}
+				}
+			})
+		}
+	}
+
+	function refreshFriendRequestCard(card, notification){
+		card.childNodes.forEach(function(element){
+			if(element.id == ("id_general_div1_" + notification['notification_id'])){
+				element.childNodes.forEach(function(child){
+					if(child.id == ("id_general_verb_" + notification['notification_id'])){
+
+						child.innerHTML = notification['verb']
+					}
+				})
+			}
+			if (element.id == ("id_general_div2_" + notification['notification_id'])){
+				if(notification['is_active'] == "True"){
+						// do nothing
+				}
+				else{
+
+					card.removeChild(element)
+				}
+			}
+			if (element.id == ("id_timestamp_" + notification['notification_id'])){
+				element.innerHTML = notification['natural_timestamp']
+			}
+		})
+	}
+
+
+	function refreshFriendListCard(card, notification){
+		card.childNodes.forEach(function(element){
+			if(element.id == ("id_general_div1_" + notification['notification_id'])){
+				element.childNodes.forEach(function(child){
+					if(child.id == ("id_general_verb_" + notification['notification_id'])){
+						// found verb
+						child.innerHTML = notification['verb']
+					}
+				})
+			}
+			if (element.id == ("id_timestamp_" + notification['notification_id'])){
+				element.innerHTML = notification['natural_timestamp']
+			}
+		})
+	}
+
+
+
+    function appendTopNotification(notification){
+        switch(notification['notification_type']){
+            case "FriendRequest":
+                notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createFriendRequestElement(notification)
+				notificationContainer.insertBefore(card,notificationContainer.childNodes[0]);
+				break;
+
+            case "FriendList":
+                notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createFriendListElement(notification)
+				notificationContainer.insertBefore(card,notificationContainer.childNodes[0]);
+				break;
+		}
+        preloadImage(notification['from']['image_url'], assignImgId(notification))
+    }
+
+    function appendBottomNotification(notification){
+        switch(notification['notification_type']) {
+
+			case "FriendRequest":
+				notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createFriendRequestElement(notification)
+				notificationContainer.appendChild(card)
+				break;
+
+			case "FriendList":
+				notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createFriendListElement(notification)
+				notificationContainer.appendChild(card)
+				break;
+
+			default:
+				// code block
+		}
+		preloadImage(notification['from']['image_url'], assignImgId(notification))
+    }
+
+
+    function createFriendListElement(notification){
+		card = createCard()
+		card.id = assignCardId(notification)
+		card.addEventListener("click", function(){
+			Redirect(notification['actions']['redirect_url'])
+		})
+
+		var div1 = document.createElement("div")
+		div1.classList.add("d-flex", "flex-row", "align-items-start")
+		div1.id = assignDiv1Id(notification)
+
+		img = createProfileImageThumbnail(notification)
+		div1.appendChild(img)
+
+		span = document.createElement("span")
+		span.classList.add("align-items-start", "pt-1", "m-auto")
+		if(notification['verb'].length > 50){
+			span.innerHTML = notification['verb'].slice(0, 50) + "..."
+		}
+		else{
+			span.innerHTML = notification['verb']
+		}
+		span.id = assignVerbId(notification)
+		div1.appendChild(span)
+		card.appendChild(div1)
+		card.appendChild(createTimestampElement(notification))
+
+		return card
+	}
+
+	function createFriendRequestElement(notification){
+		card = createCard()
+
+		// assign id b/c we need to find this div if they accept/decline the friend request
+		card.id = assignCardId(notification)
+		card.addEventListener("click", function(){
+			Redirect(notification['actions']['redirect_url'])
+		})
+
+		// Is the friend request PENDING? (not answered yet)
+		if(notification['is_active'] == "True"){
+
+			//console.log("found an active friend request")
+			div1 = document.createElement("div")
+			div1.classList.add("d-flex", "flex-row", "align-items-start")
+			div1.id = assignDiv1Id(notification)
+
+			img = createProfileImageThumbnail(notification)
+			div1.appendChild(img)
+
+			span = document.createElement("span")
+			span.classList.add("m-auto")
+			span.innerHTML = notification['verb']
+			span.id = assignVerbId(notification)
+			div1.appendChild(span)
+			card.appendChild(div1)
+
+			div2 = document.createElement("div")
+			div2.classList.add("d-flex", "flex-row", "mt-2")
+			div2.id = assignDiv2Id(notification)
+
+			pos_action = document.createElement("a")
+			pos_action.classList.add("btn", "btn-primary", "mr-2")
+			pos_action.href = "#"
+			pos_action.innerHTML = "Accept"
+			pos_action.addEventListener("click", function(e){
+				e.stopPropagation();
+				acceptFriendRequest(notification['notification_id'])
+				//sendAcceptFriendRequestToSocket(notification['notification_id'])
+			})
+			pos_action.id = assignPosActionId(notification)
+			div2.appendChild(pos_action)
+
+			neg_action = document.createElement("a")
+			neg_action.classList.add("btn", "btn-secondary")
+			neg_action.href = "#"
+			neg_action.innerHTML = "Decline"
+			neg_action.addEventListener("click", function(e){
+				e.stopPropagation();
+				declineFriendRequest(notification['notification_id'])
+				//sendDeclineFriendRequestToSocket(notification['notification_id'])
+			})
+			neg_action.id = assignNegActionId(notification)
+			div2.appendChild(neg_action)
+			card.appendChild(div2)
+		}
+		// The friend request has been answered (Declined or accepted)
+		else{
+			var div1 = document.createElement("div")
+			div1.classList.add("d-flex", "flex-row", "align-items-start")
+			div1.id = assignDiv1Id(notification)
+
+			img = createProfileImageThumbnail(notification)
+			img.id = assignImgId(notification)
+			div1.appendChild(img)
+
+			span = document.createElement("span")
+			span.classList.add("m-auto")
+			span.innerHTML = notification['verb']
+			span.id = assignVerbId(notification)
+			div1.appendChild(span)
+			card.appendChild(div1)
+		}
+		card.appendChild(createTimestampElement(notification))
+
+		return card
+	}
+
+	function createProfileImageThumbnail(notification){
+		var img = document.createElement("img")
+		img.classList.add("notification-thumbnail-image", "img-fluid", "rounded-circle", "mr-2")
+		img.src = "{% static 'dummy_image.png' %}"
+		img.id = assignImgId(notification)
+		return img
+	}
+
+	/*
+		Timestamp at the bottom of each notification card
+	*/
+	function createTimestampElement(notification){
+		var timestamp = document.createElement("p")
+		timestamp.classList.add("small", "pt-2", "timestamp-text")
+		timestamp.innerHTML = notification['natural_timestamp']
+		timestamp.id = assignTimestampId(notification)
+		return timestamp
+	}
+
+
+	function setPaginationExhausted(){
+	    setNotificationPageNumber("-1")
+	}
+
+	function setNotificationPageNumber(pageNumber){
+		document.getElementById("id_general_page_number").innerHTML = pageNumber
+	}
+
+	function setOnNotificationScrollListener(){
+		var menu = document.getElementById("id_general_notifications_container")
+		if(menu != null ){
+			menu.addEventListener("scroll", function(e){
+
+				if ((menu.scrollTop) >= (menu.scrollHeight - menu.offsetHeight)) {
+					getNextNotificationPage()
+				}
+			});
+		}
+	}
+	setOnNotificationScrollListener()
+
+	function setOldestTimestamp(timestamp){
+
+		element = document.getElementById("id_general_oldest_timestamp")
+		current = element.innerHTML
+		if(Date.parse(timestamp) < Date.parse(current)){
+			element.innerHTML = timestamp
+		}
+
+	}
+
+
+	function setNewestTimestamp(timestamp){
+		element = document.getElementById("id_general_newest_timestamp")
+		current = element.innerHTML
+		if(Date.parse(timestamp) > Date.parse(current)){
+			element.innerHTML = timestamp
+		}
+		else if(current == ""){
+			element.innerHTML = timestamp
+		}
+	}
+
+
+	function updateRequestNotification(notification){
+	    notificationContainer = document.getElementById('id_general_notifications_container')
+	    if(notificationContainer != null){
+	        divs = notificationContainer.childNodes
+	        divs.forEach(function(item){
+	            if(item.id == ("id_notification_" + notification['notification_id'])){
+	                updatedDiv = createFriendRequestElement(notification)
+					item.replaceWith(updatedDiv)
+	            }
+	        })
+	    }
+	}
+
+	function setUnreadMessageCount(count){
+	    var countElement = document.getElementById("id_chat_notifications_count")
+		if(count > 0){
+			countElement.style.background = "red"
+			countElement.style.display = "block"
+			countElement.innerHTML = count
+		}
+		else{
+			countElement.style.background = "transparent"
+			countElement.style.display = "none"
+		}
+	}
+
+
+
+
+</script>
+
+
+<!-- Send to consumer -->
+<script type="text/javascript">
+
+	function getFirstNotificationPage(){
+		if("{{request.user.is_authenticated}}"){
+			notificationSocket.send(JSON.stringify({
+				"command": "get_all_notifications",
+				"page_number": "1",
+			}));
+		}
+	}
+
+
+	function getNextNotificationPage(){
+	    var pageNumber = document.getElementById("ser").innerHTML
+	    if("{{request.user.is_authenticated}}" && pageNumber != "-1"){
+			notificationSocket.send(JSON.stringify({
+				"command": "get_all_notifications",
+				"page_number": pageNumber,
+			}));
+		}
+	}
+
+	function acceptFriendRequest(notificationId){
+	 if("{{request.user.is_authenticated}}"){
+	    notificationSocket.send(JSON.stringify({
+	        "command":"accept_friend_request",
+	        "notificationId":notificationId,
+	        }));
+	    }
+	 }
+
+	function setNotificationAsRead(){
+    if("{{request.user.is_authenticated}}"){
+	    notificationSocket.send(JSON.stringify({
+	        "command":"mark_notification_read",
+	        }));
+	    }
+	    getUnreadNotificationCount()
+    }
+
+	 function declineFriendRequest(notificationId){
+	 if("{{request.user.is_authenticated}}"){
+	    notificationSocket.send(JSON.stringify({
+	        "command":"decline_friend_request",
+	        "notificationId":notificationId,
+	        }));
+	    }
+	 }
+
+
+	function getUnreadNotificationCount(){
+	    if("{{request.user.is_authenticated}}"){
+	        notificationSocket.send(JSON.stringify({
+	        "command":"get_unread_notification_count",
+	        }));
+	    }
+	}
+
+	function getUnreadMessageCount(){
+		notificationSocket.send(JSON.stringify({
+				"command": "unreadMessageCount",
+			}));
+
+	}
+
+	function refreshNotification(){
+	    oldestTimestamp = document.getElementById("id_general_oldest_timestamp").innerHTML
+		newestTimestamp = document.getElementById("id_general_newest_timestamp").innerHTML
+
+	    if("{{request.user.is_authenticated}}"){
+	        notificationSocket.send(JSON.stringify({
+	        "command":"refresh_notification",
+	        "oldest_timestamp": oldestTimestamp,
+			"newest_timestamp": newestTimestamp,
+	        }));
+	    }
+	}
+
+
+	function getNewNotifications(){
+        newestTimestamp = document.getElementById("id_general_newest_timestamp").innerHTML
+		if("{{request.user.is_authenticated}}"){
+			notificationSocket.send(JSON.stringify({
+				"command": "new_notifications",
+				"newest_timestamp": newestTimestamp,
+			}));
+		}
+	}
+
+	function startNotificationService(){
+		if("{{request.user.is_authenticated}}" == "True"){
+		    id1 = setInterval(refreshNotification, 4000)
+			id2 = setInterval(getNewNotifications, 4000)
+			id3 = setInterval(getUnreadNotificationCount, 4000)
+		    id4 = setInterval(getUnreadMessageCount,4000)
+		}
+	}
+
+
+
+
+</script>
+
+<script type="text/javascript">
+    function Redirect(url){
+		window.location.href = url
+	}
+
+	function assignDiv1Id(notification){
+		return "id_general_div1_" + notification['notification_id']
+	}
+
+	function assignImgId(notification){
+		return "id_general_img_" + notification['notification_id']
+	}
+
+	function assignVerbId(notification){
+		return "id_general_verb_" + notification['notification_id']
+	}
+
+	function assignDiv2Id(notification){
+		return "id_general_div2_" + notification['notification_id']
+	}
+
+	function assignPosActionId(notification){
+		return "id_general_pos_action_" + notification['notification_id']
+	}
+
+	function assignNegActionId(notification){
+		return "id_general_neg_action_" + notification['notification_id']
+	}
+
+	function assignTimestampId(notification){
+		return "id_timestamp_" + notification['notification_id']
+	}
+
+	function assignCardId(notification){
+		return "id_notification_" + notification['notification_id']
+	}
+
+	function setInitialTimestamp(){
+		// ('%Y-%m-%d %H:%M:%S.%f')
+		var today = new Date();
+		var month = today.getMonth()+1
+		if(month.toString().length == 1){
+			month = "0" + month
+		}
+		var day = today.getDate()
+		if(day.toString().length == 1){
+			day = "0" + day
+		}
+		var hours = today.getHours()
+		if(hours.toString().length == 1){
+			hours = "0" + hours
+		}
+		var minutes = today.getMinutes()
+		if(minutes.toString().length == 1){
+			minutes = "0" + minutes
+		}
+		var seconds = today.getSeconds()
+		if(seconds.toString().length == 1){
+			seconds = "0" + seconds
+		}
+		var ms = "000000"
+		var date = today.getFullYear()+'-'+month+'-'+day + " " + hours + ":" + minutes + ":" + seconds + "." + ms
+		document.getElementById("id_general_oldest_timestamp").innerHTML = date
+		document.getElementById("id_general_newest_timestamp").innerHTML = date
+	}
+
+	setInitialTimestamp()
+
+
+</script>
