@@ -18,6 +18,7 @@ import public_chatroom.routing
 import privatechat.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatserver.settings")
+django.setup()
 
 application = ProtocolTypeRouter({
   "http": get_asgi_application(),
