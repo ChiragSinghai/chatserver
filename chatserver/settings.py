@@ -162,7 +162,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-BASE_URL = "http://3.15.151.53"
+BASE_URL = "http://18.117.138.217"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
