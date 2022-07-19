@@ -142,7 +142,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
-#STATIC_ROOT = os.path.join(BASE_DIR,'static/')
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
 #MEDIA_ROOT = os.path.join(BASE_DIR,'media_cdn')
 
 TEMP = os.path.join(BASE_DIR,'/temp')
@@ -162,7 +162,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-BASE_URL = "http://18.117.138.217"
+BASE_URL = "http://3.15.192.179"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
