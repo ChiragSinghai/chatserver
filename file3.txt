@@ -1,9 +1,9 @@
 server {
-    server_name 3.145.42.81;
+    server_name 18.116.88.151;
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
-        root /home/django/CodingWithMitchChat/src;
+        root /home/django/CodingWithMitchChat/src/assets;
     }
     
      location / {
