@@ -142,9 +142,9 @@ USE_TZ = True
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static'),
 ]
-STATIC_URL = '/assets/'
+STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-STATIC_ROOT = os.path.join(BASE_DIR,'assets')
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
 #MEDIA_ROOT = os.path.join(BASE_DIR,'media_cdn')
 
 TEMP = os.path.join(BASE_DIR,'/temp')
@@ -165,7 +165,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-BASE_URL = "http://18.116.88.151"
+BASE_URL = "http://3.142.133.82"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
