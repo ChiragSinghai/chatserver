@@ -92,7 +92,7 @@
                         <!-- account -->
 
                             <div class="btn-group dropleft p-2">
-								<img class="account-image rounded-circle m-auto d-block dropdown-toggle" id="id_profile_links" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" src="{% static {{request.user.profile_image.url}} %}" alt="logo" width="40" height="40">
+								<img class="account-image rounded-circle m-auto d-block dropdown-toggle" id="id_profile_links" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" src="{{request.user.profile_image.url}}" alt="logo" width="40" height="40">
 
 								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="id_profile_links">
 									<a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">Account</a>
