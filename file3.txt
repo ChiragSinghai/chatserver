@@ -1,5 +1,5 @@
 server {
-    server_name 3.145.48.4;
+    server_name 3.138.67.155;
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
