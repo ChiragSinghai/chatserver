@@ -1,0 +1,13 @@
+[Unit]
+Description=WebSocket Daphne Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/django/chatserver/src
+ExecStart=/home/django/chatserver/venv/bin/python /home/django/chatserver/venv/bin/daphne -b 0.0.0.0 -p 8001 chatserver.asgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
