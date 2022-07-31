@@ -5,6 +5,9 @@ server {
     location /static/ {
         root /home/django/chatserver/src;
     }
+    location /profile_images/ {
+        root /home/django/chatserver/src;
+    }
     
      location / {
         include proxy_params;
