@@ -147,7 +147,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
 #MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
-TEMP = os.path.join(BASE_DIR,'/temp')
+TEMP = os.path.join(BASE_DIR,'temp')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 print(STATIC_ROOT)
