@@ -152,7 +152,7 @@ def account_search_view(request, *args, **kwargs):
         if len(search_query) > 0:
             search_results = Account.objects.filter(email__icontains=search_query).filter(
                 username__icontains=search_query).distinct()
-            print(search_results)
+            print(1,search_results)
             user = request.user
             accounts = []  # [(account1, True), (account2, False), ...]
             if user.is_authenticated:
