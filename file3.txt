@@ -3,10 +3,10 @@ server {
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
-        root /home/django/chatserver/src;
+        alias /home/django/chatserver/src;
     }
     location /profile_images/ {
-        root /home/django/chatserver/src;
+        alias /home/django/chatserver/src;
     }
     
      location / {
