@@ -147,6 +147,7 @@ def account_search_view(request, *args, **kwargs):
     context = {}
     if request.method == "GET":
         search_query = request.GET.get("q")
+        print(search_query)
         print('here')
         if len(search_query) > 0:
             search_results = Account.objects.filter(email__icontains=search_query).filter(
