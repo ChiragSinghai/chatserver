@@ -28,12 +28,13 @@ def get_asgi_application():
 
 # from django.core.asgi import get_asgi_application
 
-import notify.routing
-import public_chatroom.routing
-import privatechat.routing
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatserver.settings")
 
+import notify.routing
+import public_chatroom.routing
+import privatechat.routing
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
