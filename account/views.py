@@ -147,6 +147,7 @@ def account_search_view(request, *args, **kwargs):
     context = {}
     if request.method == "GET":
         search_query = request.GET.get("q")
+        print('here')
         if len(search_query) > 0:
             search_results = Account.objects.filter(email__icontains=search_query).filter(
                 username__icontains=search_query).distinct()
@@ -162,7 +163,7 @@ def account_search_view(request, *args, **kwargs):
                 for account in search_results:
                     accounts.append((account, False))
                 context['accounts'] = accounts
-
+        print(context)
     return render(request, "account/search_results.html", context)
 
 
