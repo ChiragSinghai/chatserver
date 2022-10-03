@@ -198,7 +198,7 @@
 		startNotificationService()
 	}
 	notificationSocket.onclose = function(e) {
-		console.log('notification socket closed.');
+		console.log('notification socket closed.',e);
 		clearInterval(id1)
 		clearInterval(id2)
 		clearInterval(id3)
