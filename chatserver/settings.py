@@ -30,9 +30,6 @@ ALLOWED_HOSTS = ['*']
 
 ROOT_URLCONF = f'{config("PROJECT_NAME")}.urls'
 
-WSGI_APPLICATION = f'{config("PROJECT_NAME")}.wsgi.application'
-
-ASGI_APPLICATION = f'{config("PROJECT_NAME")}.asgi.application'
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -154,6 +151,9 @@ print(STATIC_ROOT)
 print(STATIC_URL)
 
 
+WSGI_APPLICATION = f'{config("PROJECT_NAME")}.wsgi.application'
+
+ASGI_APPLICATION = f'{config("PROJECT_NAME")}.asgi.application'
 
 
 CHANNEL_LAYERS = {
