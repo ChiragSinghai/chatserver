@@ -286,7 +286,7 @@
 		{% if debug_mode %}
 			var ws_path = ws_scheme + '://' + window.location.host + "/ws/privatechat/" + roomId + "/"; // development
 		{% else %}
-			var ws_path = ws_scheme + '://' + window.location.host + ":8001/chat/" + roomId + "/"; // production
+			var ws_path = ws_scheme + '://' + window.location.host + ":8001/privatechat/" + roomId + "/"; // production
 		{% endif %}
 
 
