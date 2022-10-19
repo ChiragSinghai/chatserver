@@ -197,6 +197,10 @@
 		getUnreadMessageCount()
 		startNotificationService()
 	}
+
+	notificationSocket.onerror = function(e) {
+    console.log('notification socket failed.',e);
+    }
 	notificationSocket.onclose = function(e) {
 		console.log('notification socket closed.',e);
 		clearInterval(id1)
