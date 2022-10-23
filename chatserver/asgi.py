@@ -24,7 +24,6 @@ import privatechat.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatserver.settings")
 application = ProtocolTypeRouter({
-  "http": get_asgi_application(),
   "websocket": AuthMiddlewareStack(
         URLRouter(
             public_chatroom.routing.websocket_urlpatterns +
