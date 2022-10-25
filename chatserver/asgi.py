@@ -13,7 +13,6 @@ import django
 #from decouple import config
 #from channels.routing import get_default_application
 from django.urls import re_path,path
-from . import consumers
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
