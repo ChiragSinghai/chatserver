@@ -7,7 +7,7 @@ For more information on this file, see
 https://docs.djangoproject.com/en/4.0/howto/deployment/asgi/
 """
 
-
+'''
 import os
 import django
 #from decouple import config
@@ -23,9 +23,6 @@ django.setup()
 from notify.consumers import NotifyConsumer
 from public_chatroom.consumers import ChatConsumer
 from privatechat.consumers import PrivateChatConsumer
-#import notify.routing
-#import public_chatroom.routing
-#import privatechat.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chatserver.settings")
 
@@ -40,6 +37,7 @@ application = ProtocolTypeRouter({
 		)
 	),
 })
+'''
 
 '''
 application = ProtocolTypeRouter({
@@ -54,16 +52,13 @@ application = ProtocolTypeRouter({
 })
 
 '''
-'''
-import os
 
+import os
 import django
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.handlers.asgi import ASGIHandler
-
-
-# from django.core.asgi import get_asgi_application
+from django.core.asgi import get_asgi_application
 
 
 
@@ -83,4 +78,3 @@ application = ProtocolTypeRouter({
         )
     ),
 })
-'''
