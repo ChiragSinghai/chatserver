@@ -150,7 +150,7 @@ def account_search_view(request, *args, **kwargs):
         print(search_query)
         print('here')
         if len(search_query) > 0:
-            search_results = Account.objects.filter(email__icontains=search_query).filter(
+            search_results = Account.objects.filter(
                 username__icontains=search_query).distinct()
             print(1,search_results)
             user = request.user
