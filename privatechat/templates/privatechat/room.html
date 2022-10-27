@@ -684,7 +684,7 @@
 			}
 		})
 	newMessageSocket.onclose = function(e) {
-			console.log('Chat socket closed.');
+			console.log('Chat socket closed.',e);
 			clearInterval(intervalId)
 		};
 
