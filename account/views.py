@@ -147,17 +147,20 @@ def account_search_view(request, *args, **kwargs):
     context = {}
     if request.method == "GET":
         search_query = request.GET.get("q")
-        print(search_query)
-        print('here')
+
         if len(search_query) > 0:
             search_results = Account.objects.filter(
                 username__icontains=search_query).distinct()
-            print(1,search_results)
             user = request.user
             accounts = []  # [(account1, True), (account2, False), ...]
             if user.is_authenticated:
                 # get the authenticated users friend list
-                auth_user_friend_list = FriendList.objects.get(user=user)
+                try:
+                    auth_user_friend_list = FriendList.objects.get(user=user)
+                except FriendList.DoesNotExist:
+                    auth_user_friend_list = FriendList(user=user)
+                    auth_user_friend_list.save()
+
                 for account in search_results:
                     accounts.append((account, auth_user_friend_list.is_mutual_friend(account)))
                 context['accounts'] = accounts

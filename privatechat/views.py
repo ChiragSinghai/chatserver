@@ -12,6 +12,7 @@ from .utils import LazyRoomChatMessageEncoder
 import json
 from itertools import chain
 from datetime import datetime
+import pytz
 
 
 # Create your views here.
@@ -95,6 +96,7 @@ def getChatMessage(request,*args,**kwargs):
 					hour=1,
 					minute=1,
 					second=1,
+					tzinfo=pytz.UTC
 				)
 				message = RoomChatMessage(
 					user=friend,
