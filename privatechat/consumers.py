@@ -301,7 +301,12 @@ def getAllRooms(user):
                 UnreadChatRoomMessages(room=room, user=user).save()
                 count = 0
             friendsMessage.append({'message': message, 'friend': friend, 'count': count})
-    content = sorted(friendsMessage, key=lambda x: x['message'].timestamp, reverse=True)
+    try:
+        content = sorted(friendsMessage, key=lambda x: x['message'].timestamp, reverse=True)
+    except TypeError:
+        for f in friendsMessage:
+            print(f['message'].timestamp)
+
 
     s = LazyRoomChatMessageEncoder()
     A = LazyAccountEncoder()
