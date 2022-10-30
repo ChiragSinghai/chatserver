@@ -303,7 +303,8 @@ def getAllRooms(user):
                 count = 0
 
             friendsMessage.append({'message': message, 'friend': friend, 'count': count})
-
+    for friend in friendsMessage:
+        print('hey', friend['message'].timestamp)
     content = sorted(friendsMessage, key=lambda x: x['message'].timestamp, reverse=True)
 
     s = LazyRoomChatMessageEncoder()
