@@ -287,7 +287,6 @@ def getAllRooms(user):
                     hour=1,
                     minute=1,
                     second=1,
-                    tzinfo=pytz.UTC
                 )
                 message = RoomChatMessage(
                     user=friend,
