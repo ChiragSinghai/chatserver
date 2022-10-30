@@ -311,7 +311,6 @@ def getAllRooms(user):
     friend = []
     for element in content:
         context = A.serialize([element['friend']])[0]
-
         message = s.serialize([element['message']])[0]
         context.update({'message':message['message']})
         context.update({'count': element['count']})
