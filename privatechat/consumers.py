@@ -11,6 +11,7 @@ import asyncio
 from itertools import chain
 from .utils import LazyRoomChatMessageEncoder,calculate_timestamp
 from datetime import datetime
+import pytz
 
 class PrivateChatConsumer(AsyncWebsocketConsumer):
 
@@ -286,6 +287,7 @@ def getAllRooms(user):
                     hour=1,
                     minute=1,
                     second=1,
+                    tzinfo=pytz.UTC,
                 )
                 message = RoomChatMessage(
                     user=friend,
