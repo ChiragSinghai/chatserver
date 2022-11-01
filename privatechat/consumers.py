@@ -12,6 +12,7 @@ from itertools import chain
 from .utils import LazyRoomChatMessageEncoder,calculate_timestamp
 from datetime import datetime
 import pytz
+import logging
 
 class PrivateChatConsumer(AsyncWebsocketConsumer):
 
@@ -301,10 +302,12 @@ def getAllRooms(user):
                 UnreadChatRoomMessages(room=room, user=user).save()
                 count = 0
             friendsMessage.append({'message': message, 'friend': friend, 'count': count})
+    logging.basicConfig(filename='/var/log/nginx/example.log', level=logging.DEBUG)
     try:
         content = sorted(friendsMessage, key=lambda x: x['message'].timestamp, reverse=True)
     except TypeError:
         for f in friendsMessage:
+            logging.debug(f[message].timestamp)
             print(f['message'].timestamp)
 
 
