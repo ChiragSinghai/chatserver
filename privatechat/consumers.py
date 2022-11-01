@@ -302,7 +302,7 @@ def getAllRooms(user):
                 UnreadChatRoomMessages(room=room, user=user).save()
                 count = 0
             friendsMessage.append({'message': message, 'friend': friend, 'count': count})
-    logging.basicConfig(filename='/var/log/nginx/example.log', level=logging.DEBUG)
+    logging.basicConfig(filename='example.log', level=logging.DEBUG)
     try:
         content = sorted(friendsMessage, key=lambda x: x['message'].timestamp, reverse=True)
     except TypeError:
